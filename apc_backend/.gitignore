@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+apc_backend/node_modules/
+
+# Environment files
+.env
+*.env
+apc_backend/server/.env
+
+# Build folders
+build/
+dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
