@@ -13,6 +13,18 @@ import AptitudePractice from "../pages/AptitudePractice";
 import CoreSubjectsPractice from "../pages/CoreSubjectsPractice";
 import StudyPage from "../pages/StudyPage";
 import TestPage from "../pages/TestPage";
+import DBMSStudy from "../pages/DBMSStudy";
+import DBMSQuestions from "../pages/DBMSQuestions";
+import DBMSFundamentals from "../pages/DBMSFundamentals";
+import DBMSERModel from "../pages/DBMSERModel";
+import DBMSNormalization from "../pages/DBMSNormalization";
+import DBMSTransactions from "../pages/DBMSTransactions";
+import DBMSSQLBasics from "../pages/DBMSSQLBasics";
+import DBMSJoins from "../pages/DBMSJoins";
+import DBMSIndexing from "../pages/DBMSIndexing";
+import DBMSScenarioBased from "../pages/DBMSScenarioBased";
+import DBMSAdvanced from "../pages/DBMSAdvanced";
+import DBMSCheatSheet from "../pages/DBMSCheatSheet";
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -68,6 +80,124 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <CoreSubjectsPractice />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/practice/core-subjects"
+        element={
+          <ProtectedRoute>
+            <Navigate to="/practice/core" replace />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/practice/core/study/DBMS"
+        element={
+          <ProtectedRoute>
+            <DBMSStudy />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/practice/core/study/DBMS/questions"
+        element={
+          <ProtectedRoute>
+            <DBMSQuestions />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/practice/core/study/DBMS/questions/ermodel"
+        element={
+          <ProtectedRoute>
+            <DBMSERModel />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/practice/core/study/DBMS/questions/normalization"
+        element={
+          <ProtectedRoute>
+            <DBMSNormalization />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/practice/core/study/DBMS/questions/transactions"
+        element={
+          <ProtectedRoute>
+            <DBMSTransactions />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/practice/core/study/DBMS/questions/sqlbasics"
+        element={
+          <ProtectedRoute>
+            <DBMSSQLBasics />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/practice/core/study/DBMS/questions/joins"
+        element={
+          <ProtectedRoute>
+            <DBMSJoins />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/practice/core/study/DBMS/questions/indexing"
+        element={
+          <ProtectedRoute>
+            <DBMSIndexing />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/practice/core/study/DBMS/questions/scenariobased"
+        element={
+          <ProtectedRoute>
+            <DBMSScenarioBased />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/practice/core/study/DBMS/questions/advanced"
+        element={
+          <ProtectedRoute>
+            <DBMSAdvanced />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/practice/core/study/DBMS/cheat-sheet"
+        element={
+          <ProtectedRoute>
+            <DBMSCheatSheet />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/practice/core/study/DBMS/interview-questions"
+        element={
+          <ProtectedRoute>
+            <DBMSQuestions />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/practice/core/study/DBMS/questions/fundamentals"
+        element={
+          <ProtectedRoute>
+            <DBMSFundamentals />
           </ProtectedRoute>
         }
       />
@@ -154,7 +284,7 @@ export default function AppRoutes() {
 
       {/* Fallback routes */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/practice" replace />} />
     </Routes>
   );
 }

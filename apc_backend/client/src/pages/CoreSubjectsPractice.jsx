@@ -67,13 +67,23 @@ export default function CoreSubjectsPractice() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <Link
-                to={`/practice/core/study/${encodeURIComponent(subject.name)}`}
-                className="flex items-center justify-center py-3 bg-slate-800 hover:bg-slate-750 text-slate-200 rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-slate-700"
-              >
-                <BookOpen className="w-4 h-4 mr-2" />
-                Study
-              </Link>
+              {subject.name === "DBMS" ? (
+                <Link
+                  to="/practice/core/study/DBMS"
+                  className="flex items-center justify-center py-3 bg-slate-800 hover:bg-slate-750 text-slate-200 rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-slate-700"
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Study
+                </Link>
+              ) : (
+                <Link
+                  to={`/practice/core/study/${encodeURIComponent(subject.name)}`}
+                  className="flex items-center justify-center py-3 bg-slate-800 hover:bg-slate-750 text-slate-200 rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-slate-700"
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Study
+                </Link>
+              )}
               <Link
                 to={`/practice/core/test/${encodeURIComponent(subject.name)}`}
                 className="flex items-center justify-center py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-600/20"
