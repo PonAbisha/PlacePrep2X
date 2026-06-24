@@ -6,11 +6,11 @@ export default function CoreSubjectsPractice() {
   const navigate = useNavigate();
 
   const subjects = [
-    { name: "DBMS", progress: 75, completedTopics: 8, icon: Database },
-    { name: "Operating Systems", progress: 50, completedTopics: 5, icon: HardDrive },
-    { name: "Computer Networks", progress: 30, completedTopics: 3, icon: Network },
-    { name: "OOP", progress: 90, completedTopics: 10, icon: Code },
-    { name: "SQL", progress: 60, completedTopics: 7, icon: FileText },
+  { name: "DBMS", route: "/practice/core/study/DBMS", progress: 75, completedTopics: 8, icon: Database },
+  { name: "Operating Systems", route: "/practice/core/study/OS", progress: 50, completedTopics: 5, icon: HardDrive },
+  { name: "Computer Networks", route: "/practice/core/study/CN", progress: 30, completedTopics: 3, icon: Network },
+  { name: "OOP", route: "/practice/core/study/OOP", progress: 90, completedTopics: 10, icon: Code },
+  { name: "SQL", route: "/practice/core/study/SQL", progress: 0, completedTopics: 0, icon: FileText }
   ];
 
   return (
@@ -67,23 +67,13 @@ export default function CoreSubjectsPractice() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              {subject.name === "DBMS" ? (
-                <Link
-                  to="/practice/core/study/DBMS"
-                  className="flex items-center justify-center py-3 bg-slate-800 hover:bg-slate-750 text-slate-200 rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-slate-700"
-                >
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Study
-                </Link>
-              ) : (
-                <Link
-                  to={`/practice/core/study/${encodeURIComponent(subject.name)}`}
-                  className="flex items-center justify-center py-3 bg-slate-800 hover:bg-slate-750 text-slate-200 rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-slate-700"
-                >
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Study
-                </Link>
-              )}
+              <Link
+                to={subject.route}
+                className="flex items-center justify-center py-3 bg-slate-800 hover:bg-slate-750 text-slate-200 rounded-xl text-xs font-black uppercase tracking-widest transition-all border border-slate-700"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                Study
+              </Link>
               <Link
                 to={`/practice/core/test/${encodeURIComponent(subject.name)}`}
                 className="flex items-center justify-center py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-600/20"
