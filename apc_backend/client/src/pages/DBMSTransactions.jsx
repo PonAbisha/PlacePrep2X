@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import fundamentals from "../data/coreSubjects/dbms/fundamentals";
+import transactions from "../data/coreSubjects/dbms/transactions";
 
-export default function DBMSFundamentals() {
+export default function DBMSTransactions() {
   const navigate = useNavigate();
   const [openId, setOpenId] = useState(null);
 
@@ -15,15 +15,15 @@ export default function DBMSFundamentals() {
           className="group flex items-center text-slate-400 hover:text-white transition-colors mb-6 text-sm font-bold uppercase tracking-widest"
         >
           <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-          DBMS Questions
+          DBMS Transactions
         </button>
-        <h1 className="text-4xl font-extrabold text-white tracking-tight">DBMS Fundamentals</h1>
+        <h1 className="text-4xl font-extrabold text-white tracking-tight">DBMS Transactions</h1>
       </header>
 
       <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-8 shadow-lg">
-        <p className="text-slate-400 text-sm">Total Questions: {fundamentals.length}</p>
+        <p className="text-slate-400 text-sm">Total Questions: {transactions.length}</p>
       </div>
-      {fundamentals.map((q) => (
+      {transactions.map((q) => (
   <div
     key={q.id}
     className="bg-slate-900/40 border border-slate-800 rounded-3xl p-8 shadow-lg"
