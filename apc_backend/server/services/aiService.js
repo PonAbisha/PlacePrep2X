@@ -12,11 +12,19 @@ dotenv.config();
  */
 export const generateAICompletion = async (systemPrompt, messages, jsonMode = false) => {
   const ollamaHost = process.env.OLLAMA_HOST || "http://localhost:11434";
-  const ollamaModel = process.env.OLLAMA_MODEL || "qwen2.5-coder";
+  const configuredOllamaModel = process.env.OLLAMA_MODEL || "qwen2.5-coder:7b";
+  const ollamaModel = configuredOllamaModel === "qwen2.5-coder"
+    ? "qwen2.5-coder:7b"
+    : configuredOllamaModel;
   const useOllama = process.env.USE_OLLAMA !== "false"; // Defaults to true if not explicitly false
 
   if (useOllama) {
     try {
+      if (configuredOllamaModel !== ollamaModel) {
+        console.log(
+          `[AI Service] Normalized OLLAMA_MODEL from ${configuredOllamaModel} to ${ollamaModel}.`
+        );
+      }
       console.log(`[AI Service] Attempting completion with Ollama (${ollamaModel}) at ${ollamaHost}...`);
       
       const formattedMessages = [
@@ -45,15 +53,23 @@ export const generateAICompletion = async (systemPrompt, messages, jsonMode = fa
         body: JSON.stringify(body),
       });
 
-      if (response.ok) {
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.warn(
+          `[AI Service] Ollama /api/chat failed with status ${response.status} ${response.statusText}. Response body: ${errorBody}`
+        );
+      } else {
         const data = await response.json();
         const content = data.message?.content;
         if (content) {
           console.log("[AI Service] Ollama response received successfully.");
           return content;
         }
+        console.warn(
+          `[AI Service] Ollama /api/chat returned empty content. Response body: ${JSON.stringify(data)}`
+        );
       }
-      console.warn("[AI Service] Ollama API returned non-ok status or empty content, falling back to Anthropic...");
+      console.warn("[AI Service] Falling back to Anthropic...");
     } catch (err) {
       console.warn(`[AI Service] Ollama request failed: ${err.message}. Falling back to Anthropic...`);
     }

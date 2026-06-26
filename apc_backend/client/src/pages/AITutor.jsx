@@ -1,4 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { Copy } from "lucide-react";
 import { chatWithTutor, getTutorConversations, getTutorConversation, deleteTutorConversation } from "../api";
 import {
   MessageSquare,
@@ -16,6 +21,7 @@ export default function AITutor() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [listLoading, setListLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   const messagesEndRef = useRef(null);
 
@@ -38,7 +44,36 @@ export default function AITutor() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+  const handleQuickPrompt = async (prompt) => {
+  if (loading) return;
 
+  setInput("");
+
+  const updatedMessages = [...messages, { role: "user", content: prompt }];
+  setMessages(updatedMessages);
+  setLoading(true);
+
+  try {
+    const res = await chatWithTutor({
+      message: prompt,
+      conversationId: activeId || undefined,
+    });
+
+    setMessages((prev) => [
+      ...prev,
+      { role: "assistant", content: res.data.message },
+    ]);
+
+    if (!activeId) {
+      setActiveId(res.data.conversationId);
+      await loadConversations();
+    }
+  } catch (err) {
+    alert("Failed to delete conversation");
+  } finally {
+    setLoading(false);
+  }
+};
   const loadConversationDetails = async (convId) => {
     setActiveId(convId);
     setLoading(true);
@@ -107,7 +142,15 @@ export default function AITutor() {
       alert("Failed to delete conversation");
     }
   };
-
+  const copyToClipboard = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  } catch (err) {
+    console.error("Copy failed:", err);
+  }
+  };
   return (
     <div className="h-[80vh] flex flex-col md:flex-row glass-panel rounded-2xl overflow-hidden border border-slate-800/60 animate-fadeIn">
       {/* Sidebar Conversation List */}
@@ -168,10 +211,73 @@ export default function AITutor() {
               <div className="p-4 bg-blue-500/15 rounded-full text-blue-400">
                 <Bot className="h-10 w-10" />
               </div>
-              <h2 className="text-xl font-bold text-slate-200">AI Placement Tutor</h2>
-              <p className="text-xs text-slate-400">
-                Ask any doubts regarding Data Structures, Algorithms, DBMS, Operating Systems, Computer Networks, SQL, or mock interviews. I am ready to explain with examples.
+              <h2 className="text-3xl font-extrabold text-white">
+                🤖 AI Placement Tutor
+              </h2>
+
+              <p className="text-slate-400 max-w-lg text-center leading-relaxed">
+                Your personal AI mentor for placement preparation.
+                Ask questions on DSA, DBMS, OS, Computer Networks,
+                OOP, SQL, Aptitude, HR interviews, Resume building,
+                System Design and Coding Interviews.
               </p>
+              <div className="grid grid-cols-2 gap-3 mt-8 w-full max-w-xl">
+              <button
+                onClick={() => handleQuickPrompt("Explain Normalization with an example")}
+                className="bg-slate-900 hover:bg-slate-800 rounded-xl p-3 text-sm text-slate-300"
+              >
+                📘 Explain DBMS Normalization
+              </button>
+
+              <button
+                onClick={() => handleQuickPrompt("Explain Deadlock with real life example")}
+                className="bg-slate-900 hover:bg-slate-800 rounded-xl p-3 text-sm text-slate-300"
+              >
+                💻 Explain Deadlock
+              </button>
+
+              <button
+                onClick={() => handleQuickPrompt("Difference between TCP and UDP")}
+                className="bg-slate-900 hover:bg-slate-800 rounded-xl p-3 text-sm text-slate-300"
+              >
+                🌐 TCP vs UDP
+              </button>
+
+              <button
+                onClick={() => handleQuickPrompt("Tell me OOP pillars with examples")}
+                className="bg-slate-900 hover:bg-slate-800 rounded-xl p-3 text-sm text-slate-300"
+              >
+                🧩 OOP Concepts
+              </button>
+              <button
+                onClick={() => handleQuickPrompt("Explain Binary Search with C++")}
+                className="bg-slate-900 hover:bg-slate-800 rounded-xl p-3 text-sm text-slate-300"
+              >
+                🧠 Binary Search
+              </button>
+
+              <button
+                onClick={() => handleQuickPrompt("What is Time Complexity?")}
+                className="bg-slate-900 hover:bg-slate-800 rounded-xl p-3 text-sm text-slate-300"
+              >
+                📈 Time Complexity
+              </button>
+
+              <button
+                onClick={() => handleQuickPrompt("Review my resume for placements")}
+                className="bg-slate-900 hover:bg-slate-800 rounded-xl p-3 text-sm text-slate-300"
+              >
+                📄 Resume Tips
+              </button>
+
+              <button
+                onClick={() => handleQuickPrompt("Ask me an HR interview question")}
+                className="bg-slate-900 hover:bg-slate-800 rounded-xl p-3 text-sm text-slate-300"
+              >
+                🎤 HR Interview
+              </button>
+
+            </div>
             </div>
           ) : (
             messages.map((msg, index) => {
@@ -192,7 +298,40 @@ export default function AITutor() {
                       ? "bg-slate-900/60 border-slate-850 text-slate-350 text-sm whitespace-pre-line"
                       : "bg-[#1d4ed8]/10 border-blue-900/30 text-slate-100 text-sm"
                   }`}>
-                    {msg.content}
+                    <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          code({ inline, className, children, ...props }) {
+                            const match = /language-(\w+)/.exec(className || "");
+
+                            return !inline && match ? (
+                              <SyntaxHighlighter
+                                style={oneDark}
+                                language={match[1]}
+                                PreTag="div"
+                                {...props}
+                              >
+                                {String(children).replace(/\n$/, "")}
+                              </SyntaxHighlighter>
+                            ) : (
+                              <code className="bg-slate-800 px-1 rounded">
+                                {children}
+                              </code>
+                            );
+                          },
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                      {isAI && (
+                      <button
+                        onClick={() => copyToClipboard(msg.content)}
+                        className="mt-3 inline-flex items-center px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-blue-400"
+                      >
+                        <Copy className="h-3 w-3 mr-1" />
+                        Copy Response
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -205,6 +344,9 @@ export default function AITutor() {
                 <Bot className="h-4.5 w-4.5" />
               </div>
               <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-850 text-slate-300 text-sm">
+                <p className="mb-2 text-blue-400 font-medium">
+                  🤖 PlacePrep AI is thinking...
+                </p>
                 <div className="flex items-center space-x-1.5 py-1">
                   <div className="h-2 w-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
                   <div className="h-2 w-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
@@ -219,12 +361,15 @@ export default function AITutor() {
 
         {/* Input Form Box */}
         <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-900 bg-slate-950/20">
+           <p className="text-xs text-slate-500 mb-2">
+            💡 Tip: Ask for interview questions, coding help, resume suggestions or concept explanations.
+          </p>
           <div className="flex items-center space-x-3 bg-slate-900 border border-slate-800 focus-within:border-blue-500 rounded-xl px-4 py-2.5 transition-colors">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask a technical or placement preparation doubt..."
+              placeholder="Ask anything about placements, coding, aptitude, interviews..."
               className="flex-1 bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none"
             />
             <button
@@ -236,6 +381,11 @@ export default function AITutor() {
             </button>
           </div>
         </form>
+        {copied && (
+          <div className="absolute bottom-24 right-6 bg-green-600 text-white px-4 py-2 rounded-xl shadow-lg">
+            ✅ Response Copied
+          </div>
+        )}
       </section>
     </div>
   );

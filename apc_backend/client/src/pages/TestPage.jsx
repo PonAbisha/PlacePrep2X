@@ -27,7 +27,7 @@ function TestPage() {
   const [isFinished, setIsFinished] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({}); // { qIndex: optionIndex }
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
+  const [timeLeft, setTimeLeft] = useState(300); // 10 minutes
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [difficulty, setDifficulty] = useState("Medium");
@@ -85,7 +85,9 @@ function TestPage() {
       setIsStarted(true);
     } catch (err) {
       console.error("Failed to generate AI test:", err);
-      alert("AI generation failed. Please try again.");
+      alert(
+      "Unable to generate the AI test.\n\nPlease wait a few seconds and try again."
+    );
     } finally {
       setLoading(false);
     }
@@ -125,7 +127,7 @@ function TestPage() {
         difficulty,
         score,
         total_qs: total,
-        time_spent: 600 - timeLeft,
+        time_spent: 300 - timeLeft,
         evaluations
       });
     } catch (err) {
@@ -143,7 +145,7 @@ function TestPage() {
           </div>
           <div className="space-y-2">
             <h1 className="text-3xl font-extrabold text-white">{title} Test</h1>
-            <p className="text-slate-400 text-sm font-medium uppercase tracking-widest">10 Questions • 10 Minutes</p>
+            <p className="text-slate-400 text-sm font-medium uppercase tracking-widest">5 Questions • 5 Minutes</p>
           </div>
           <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 text-left space-y-3">
             <p className="text-xs font-black uppercase tracking-widest text-slate-500">Guidelines:</p>
@@ -159,18 +161,39 @@ function TestPage() {
             </ul>
           </div>
           
-          <div className="grid grid-cols-3 gap-3">
-            {['Easy', 'Medium', 'Hard'].map((level) => (
-              <button
-                key={level}
-                disabled={loading}
-                onClick={() => startAssessment(level)}
-                className={`py-4 ${styles.bg} ${styles.hover} text-white rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg ${styles.shadow} disabled:opacity-50 flex items-center justify-center`}
-              >
-                {loading && difficulty === level ? <Loader2 className="animate-spin w-4 h-4" /> : level}
-              </button>
-            ))}
-          </div>
+          {!loading ? (
+  <div className="grid grid-cols-3 gap-3">
+    {["Easy", "Medium", "Hard"].map((level) => (
+      <button
+        key={level}
+        onClick={() => startAssessment(level)}
+        className={`py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all ${
+          difficulty === level
+            ? `${styles.bg} text-white shadow-lg ${styles.shadow}`
+            : "bg-slate-800 hover:bg-slate-700 text-slate-300"
+        }`}
+      >
+        {level}
+      </button>
+    ))}
+  </div>
+) : (
+  <div className="mt-6 text-center">
+    <Loader2 className="animate-spin w-8 h-8 mx-auto text-emerald-500 mb-4" />
+
+    <h3 className="text-white text-lg font-bold">
+      🤖 Generating AI Test...
+    </h3>
+
+    <p className="text-slate-400 mt-2">
+      Please wait while AI creates personalized placement questions.
+    </p>
+
+    <p className="text-slate-500 text-sm mt-2">
+      This usually takes around 10–20 seconds.
+    </p>
+  </div>
+)}
         </div>
       </div>
     );
@@ -180,6 +203,13 @@ function TestPage() {
     const { score, accuracy, total } = calculateResults();
     return (
       <div className="space-y-10 animate-in fade-in duration-500 pb-20">
+        <button
+          onClick={() => navigate(`/practice/${isAptitude ? "aptitude" : "core"}`)}
+          className="group flex items-center text-slate-400 hover:text-white transition-colors mb-6 text-sm font-bold uppercase tracking-widest"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+          Back
+        </button>
         <header className="text-center space-y-4">
           <h1 className="text-4xl font-extrabold text-white tracking-tight">Test Results</h1>
           <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Subject: {title}</p>
@@ -254,8 +284,17 @@ function TestPage() {
 
   const currentQ = questions[currentIndex];
   return (
-    <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in duration-500 pb-20">
-      <header className="flex items-center justify-between">
+  <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in duration-500 pb-20">
+
+    <button
+      onClick={() => navigate(`/practice/${isAptitude ? "aptitude" : "core"}`)}
+      className="group flex items-center text-slate-400 hover:text-white transition-colors mb-6 text-sm font-bold uppercase tracking-widest"
+    >
+      <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+      Back
+    </button>
+
+    <header className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-extrabold text-white tracking-tight">{title} Assessment</h1>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Question {currentIndex + 1} of {questions.length}</p>
