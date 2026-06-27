@@ -27,7 +27,7 @@ function TestPage() {
   const [isFinished, setIsFinished] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({}); // { qIndex: optionIndex }
-  const [timeLeft, setTimeLeft] = useState(300); // 10 minutes
+  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [difficulty, setDifficulty] = useState("Medium");
@@ -127,7 +127,7 @@ function TestPage() {
         difficulty,
         score,
         total_qs: total,
-        time_spent: 300 - timeLeft,
+        time_spent: 600 - timeLeft,
         evaluations
       });
     } catch (err) {
@@ -145,7 +145,7 @@ function TestPage() {
           </div>
           <div className="space-y-2">
             <h1 className="text-3xl font-extrabold text-white">{title} Test</h1>
-            <p className="text-slate-400 text-sm font-medium uppercase tracking-widest">5 Questions • 5 Minutes</p>
+            <p className="text-slate-400 text-sm font-medium uppercase tracking-widest">10 Questions • 10 Minutes</p>
           </div>
           <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 text-left space-y-3">
             <p className="text-xs font-black uppercase tracking-widest text-slate-500">Guidelines:</p>

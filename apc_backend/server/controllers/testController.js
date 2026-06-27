@@ -10,7 +10,7 @@ export const generateAITest = async (req, res, next) => {
     }
 
     const systemPrompt = `You are an expert ${category === 'core' ? 'Computer Science' : 'Aptitude'} instructor.
-Generate 5 fresh, placement-level multiple-choice questions for the topic: "${topic}" at "${difficulty}" difficulty.
+Generate 10 fresh, placement-level multiple-choice questions for the topic: "${topic}" at "${difficulty}" difficulty.
 Requirements:
 1. Never use questions from standard textbooks like R.S. Aggarwal or common online banks.
 2. Questions must be challenging and reflect current Tier-1/Tier-2 company placement standards.
@@ -25,7 +25,7 @@ Each object structure:
 }`;
 
     const responseText = await generateAICompletion(systemPrompt, [
-      { role: "user", content: `Generate 5 ${difficulty} questions for ${topic}.` }
+      { role: "user", content: `Generate 10 ${difficulty} questions for ${topic}.` }
     ], false);
 
     let questions;

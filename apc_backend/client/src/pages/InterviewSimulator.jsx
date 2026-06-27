@@ -8,7 +8,6 @@ import {
   BookOpen,
   CheckCircle,
   AlertCircle,
-  HelpCircle,
 } from "lucide-react";
 
 export default function InterviewSimulator() {
@@ -26,21 +25,57 @@ export default function InterviewSimulator() {
   const mockQuestions = {
     technical: [
       "What is the difference between TCP and UDP, and when would you use each?",
-      "Explain the concept of database normalization and why it is important.",
-      "What is virtual memory in operating systems, and how does page replacement work?",
-      "Explain inheritance and polymorphism in Object-Oriented Programming with real-world examples."
+      "Explain database normalization and its different normal forms.",
+      "What is virtual memory and how does paging work?",
+      "Explain inheritance and polymorphism with examples.",
+      "What is the difference between a process and a thread?",
+      "Explain deadlock. What are the necessary conditions?",
+      "What is the difference between stack and heap memory?",
+      "What is indexing in DBMS? Why is it used?",
+      "Explain ACID properties in DBMS.",
+      "What is the difference between SQL and NoSQL databases?",
+      "Explain primary key and foreign key with examples.",
+      "What is the difference between GET and POST requests?",
+      "Explain the OSI model layer by layer.",
+      "What is DNS and how does it work?",
+      "What is a race condition? How can it be prevented?",
+      "Explain the difference between abstract class and interface.",
+      "What is recursion? Where should it be used?",
+      "Explain time complexity with an example.",
+      "What are joins in SQL? Explain INNER, LEFT, RIGHT and FULL JOIN.",
+      "What is a REST API? What are its principles?"
     ],
     hr: [
-      "Tell me about yourself, your background, and your career aspirations.",
-      "What is your greatest strength and your greatest weakness? Provide examples.",
-      "Tell me about a time you worked in a team and faced a major challenge. How did you resolve it?",
-      "Why should we hire you for this role over other candidates?"
-    ]
+    "Tell me about yourself.",
+    "Why do you want to join our company?",
+    "Why should we hire you?",
+    "What are your greatest strengths?",
+    "What is your biggest weakness and how are you improving it?",
+    "Where do you see yourself in five years?",
+    "Describe a challenging situation you faced and how you handled it.",
+    "Tell me about a time you worked successfully in a team.",
+    "Tell me about a time you had a conflict with a teammate.",
+    "How do you handle pressure and deadlines?",
+    "Describe a failure and what you learned from it.",
+    "What motivates you to perform well?",
+    "How do you prioritize multiple tasks?",
+    "Are you willing to relocate? Why?",
+    "What are your career goals?",
+    "What do you know about our company?",
+    "Tell me about a project you are most proud of.",
+    "How do you keep yourself updated with new technologies?",
+    "What would you do if you disagreed with your manager?",
+    "Do you have any questions for us?"
+  ],
   };
 
   const startSession = (selectedType) => {
     setType(selectedType);
-    setQuestions(mockQuestions[selectedType]);
+    const shuffled = [...mockQuestions[selectedType]]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 5);
+
+    setQuestions(shuffled);
     setCurrentQIndex(0);
     setAnswerInput("");
     setEvaluations([]);
@@ -102,11 +137,48 @@ export default function InterviewSimulator() {
     }
   };
 
+  const [showQuitModal, setShowQuitModal] = useState(false);
+
   const handleQuit = () => {
-    if (window.confirm("Are you sure you want to end this interview session? Your progress will not be saved.")) {
-      setSessionActive(false);
-      setReport(null);
+    setShowQuitModal(true);
+  };
+
+  const confirmQuit = () => {
+    setSessionActive(false);
+    setReport(null);
+    setShowQuitModal(false);
+  };
+
+  const cancelQuit = () => {
+    setShowQuitModal(false);
+  };
+
+  const getPerformance = (score) => {
+    if (score >= 9) {
+      return {
+        label: "Excellent",
+        color: "bg-emerald-500/20 text-emerald-400",
+      };
     }
+
+    if (score >= 7) {
+      return {
+        label: "Good",
+        color: "bg-blue-500/20 text-blue-400",
+      };
+    }
+
+    if (score >= 5) {
+      return {
+        label: "Average",
+        color: "bg-yellow-500/20 text-yellow-400",
+      };
+    }
+
+    return {
+      label: "Needs Improvement",
+      color: "bg-red-500/20 text-red-400",
+    };
   };
 
   return (
@@ -118,7 +190,7 @@ export default function InterviewSimulator() {
             AI Interview Simulator
           </h1>
           <p className="text-slate-400 mt-1">
-            Practice placements using technical or behavioral mock interviews evaluated by local LLMs.
+            Practice technical and HR mock interviews with instant AI-powered evaluation and personalized feedback.
           </p>
         </div>
       )}
@@ -274,12 +346,30 @@ export default function InterviewSimulator() {
       {/* REPORT CARD DISPLAY */}
       {report && (
         <div className="max-w-2xl mx-auto glass-card p-6 md:p-8 rounded-2xl space-y-6 animate-scaleIn border border-blue-500/10">
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-4">
             <div className="inline-flex p-4 bg-blue-500/10 rounded-full text-blue-500">
               <Award className="h-10 w-10" />
             </div>
+
             <h2 className="text-2xl font-bold">Interview Completed!</h2>
-            <p className="text-slate-400 text-xs">Here is your summary score card.</p>
+
+            <div
+              className={`inline-flex px-4 py-2 rounded-full text-sm font-bold ${
+                getPerformance(report.avg_score).color
+              }`}
+            >
+              {getPerformance(report.avg_score).label}
+            </div>
+
+            <p className="text-slate-400 text-xs">
+            {report.avg_score >= 9
+              ? "Outstanding performance! You are interview-ready."
+              : report.avg_score >= 7
+              ? "Great job! A little more practice will make you even stronger."
+              : report.avg_score >= 5
+              ? "Good effort! Keep practicing to improve your confidence."
+              : "Keep learning and practicing. Every interview makes you better."}
+          </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 py-4 bg-slate-900/60 rounded-xl border border-slate-850 text-center">

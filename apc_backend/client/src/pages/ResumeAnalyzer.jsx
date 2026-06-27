@@ -11,8 +11,9 @@ import {
   BookOpen,
 } from "lucide-react";
 
+
 export default function ResumeAnalyzer() {
-  const [resumeText, setResumeText] = useState("");
+  const [resumeFile, setResumeFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
   const [activeAnalysis, setActiveAnalysis] = useState(null);
@@ -32,11 +33,12 @@ export default function ResumeAnalyzer() {
 
   const handleAnalyze = async (e) => {
     e.preventDefault();
-    if (!resumeText.trim() || loading) return;
-
+    if (!resumeFile || loading) return;
     setLoading(true);
     try {
-      const res = await analyzeResume({ resume_text: resumeText.trim() });
+      const formData = new FormData();
+      formData.append("resume", resumeFile);
+      const res = await analyzeResume(formData);
       setActiveAnalysis(res.data.analysis);
       await loadHistory(); // refresh sidebar
     } catch (err) {
@@ -70,25 +72,24 @@ export default function ResumeAnalyzer() {
             <div className="glass-card p-6 rounded-2xl space-y-4">
               <h2 className="text-lg font-bold text-slate-300 flex items-center space-x-2">
                 <FileText className="h-5 w-5 text-blue-500" />
-                <span>Paste Resume Text</span>
+                <span>Upload Resume (PDF)</span>
               </h2>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Copy and paste the plain text of your resume below. Our LLM-powered analyzer will evaluate it against typical placement formats, keywords, and metrics.
+                Upload your PDF resume for AI-powered ATS analysis.
               </p>
 
               <form onSubmit={handleAnalyze} className="space-y-4">
-                <textarea
-                  value={resumeText}
-                  onChange={(e) => setResumeText(e.target.value)}
-                  placeholder="Paste resume text here..."
-                  rows={8}
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => setResumeFile(e.target.files[0])}
                   disabled={loading}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors resize-none"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm text-slate-300"
                 />
 
                 <button
                   type="submit"
-                  disabled={loading || !resumeText.trim()}
+                  disabled={loading || !resumeFile}
                   className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:opacity-50 text-white font-semibold py-3 rounded-xl text-sm transition-all"
                 >
                   {loading ? "Analyzing ATS Match..." : "Analyze Resume"}
@@ -104,7 +105,7 @@ export default function ResumeAnalyzer() {
               <button
                 onClick={() => {
                   setActiveAnalysis(null);
-                  setResumeText("");
+                  setResumeFile(null);
                 }}
                 className="text-xs text-slate-400 hover:text-white flex items-center space-x-1 border border-slate-800 px-3 py-1.5 rounded-lg bg-slate-900/40"
               >
@@ -241,7 +242,7 @@ export default function ResumeAnalyzer() {
                 <div className="overflow-hidden">
                   <h4 className="font-semibold truncate max-w-[120px]">Analysis Session</h4>
                   <p className="text-[10px] text-slate-400 mt-0.5">
-                    {new Date(h.created_at).toLocaleDateString()}
+                    {new Date(h.createdAt || h.created_at).toLocaleDateString()}
                   </p>
                 </div>
                 <span className="font-bold text-slate-200">{h.ats_score}% ATS</span>

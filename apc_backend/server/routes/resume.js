@@ -1,5 +1,5 @@
 import express from "express";
-
+import upload from "../middleware/upload.js";
 import {
   analyzeResume,
   getResumeHistory,
@@ -13,10 +13,16 @@ const router = express.Router();
 
 router.use(authenticate);
 
-router.post("/analyze", analyzeResume);
+router.post(
+  "/analyze",
+  upload.single("resume"),
+  analyzeResume
+);
 
 router.get("/history", getResumeHistory);
 
 router.get("/:id", getResumeAnalysis);
+
+router.delete("/:id", deleteResumeAnalysis);
 
 export default router;

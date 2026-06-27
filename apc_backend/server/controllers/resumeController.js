@@ -1,62 +1,69 @@
 import ResumeAnalysis from "../models/Resume.js";
 import { analyzeResumeAI } from "../services/resumeService.js";
-import { query } from "../config/db.js";
-
+import PDFParser from "pdf2json";
 // ── POST /api/resume/analyze ──────────────────────────────────
 export const analyzeResume = async (req, res, next) => {
   try {
-    const { resume_text } = req.body;
+    if (!req.file) {
+    return res.status(400).json({
+      error: "Please upload a PDF resume.",
+    });
+  }
 
-    if (!resume_text?.trim()) {
-      return res.status(400).json({ error: "resume_text is required" });
+  const pdfParser = new PDFParser();
+
+const resume_text = await new Promise((resolve, reject) => {
+  pdfParser.on("pdfParser_dataError", (errData) => {
+    reject(errData.parserError);
+  });
+
+  pdfParser.on("pdfParser_dataReady", () => {
+    const text = pdfParser.getRawTextContent();
+
+    if (!text.trim()) {
+      reject(new Error("Unable to extract text from PDF."));
     }
 
-    // Call AI service (Ollama → Claude fallback)
-    const result = await analyzeResumeAI(resume_text.trim());
+    resolve(text.trim());
+  });
+
+  pdfParser.parseBuffer(req.file.buffer);
+});
+
+const result = await analyzeResumeAI(resume_text);
 
     // Persist to DB
-    const { rows } = await query(
-      `INSERT INTO resume_analyses
-         (user_id, resume_text, overall_score, ats_score, verdict, strengths, gaps, missing_skills, recommendations)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       RETURNING id, overall_score, ats_score, verdict, created_at`,
-      [
-        req.user.id,
-        resume_text.trim(),
-        result.score,
-        result.ats_score,
-        result.verdict,
-        JSON.stringify(result.strengths || []),
-        JSON.stringify(result.gaps || []),
-        JSON.stringify(result.missing_skills || []),
-        JSON.stringify(result.recommendations || []),
-      ]
-    );
+    const analysis = await ResumeAnalysis.create({
+    user_id: req.user.id,
+    resume_text: resume_text,
+    overall_score: result.score,
+    ats_score: result.ats_score,
+    verdict: result.verdict,
+    strengths: result.strengths,
+    gaps: result.gaps,
+    missing_skills: result.missing_skills,
+    recommendations: result.recommendations,
+  });
 
-    res.status(201).json({
-      analysis: {
-        id: rows[0].id,
-        ...result,
-        created_at: rows[0].created_at,
-      },
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+  res.status(201).json({
+    analysis,
+  });
+    } catch (err) {
+      next(err);
+    }
+  };
 
 // ── GET /api/resume/history ───────────────────────────────────
 export const getResumeHistory = async (req, res, next) => {
   try {
-    const { rows } = await query(
-      `SELECT id, overall_score, ats_score, verdict, created_at
-       FROM resume_analyses
-       WHERE user_id = $1
-       ORDER BY created_at DESC
-       LIMIT 10`,
-      [req.user.id]
-    );
-    res.json({ history: rows });
+    const history = await ResumeAnalysis.find({
+      user_id: req.user.id,
+    })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .select("overall_score ats_score verdict createdAt");
+
+    res.json({ history });
   } catch (err) {
     next(err);
   }
@@ -65,16 +72,16 @@ export const getResumeHistory = async (req, res, next) => {
 // ── GET /api/resume/:id ───────────────────────────────────────
 export const getResumeAnalysis = async (req, res, next) => {
   try {
-    const { rows } = await query(
-      `SELECT id, overall_score, ats_score, verdict, strengths, gaps, missing_skills, recommendations, created_at
-       FROM resume_analyses
-       WHERE id = $1 AND user_id = $2`,
-      [req.params.id, req.user.id]
-    );
-    if (!rows.length) {
+    const analysis = await ResumeAnalysis.findOne({
+      _id: req.params.id,
+      user_id: req.user.id,
+    });
+
+    if (!analysis) {
       return res.status(404).json({ error: "Analysis not found" });
     }
-    res.json({ analysis: rows[0] });
+
+    res.json({ analysis });
   } catch (err) {
     next(err);
   }
@@ -83,10 +90,15 @@ export const getResumeAnalysis = async (req, res, next) => {
 // ── DELETE /api/resume/:id ────────────────────────────────────
 export const deleteResumeAnalysis = async (req, res, next) => {
   try {
-    await query(
-      `DELETE FROM resume_analyses WHERE id = $1 AND user_id = $2`,
-      [req.params.id, req.user.id]
-    );
+    const analysis = await ResumeAnalysis.findOneAndDelete({
+      _id: req.params.id,
+      user_id: req.user.id,
+    });
+
+    if (!analysis) {
+      return res.status(404).json({ error: "Analysis not found" });
+    }
+
     res.json({ message: "Analysis deleted successfully" });
   } catch (err) {
     next(err);
