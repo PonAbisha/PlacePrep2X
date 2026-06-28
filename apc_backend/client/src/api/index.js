@@ -86,12 +86,8 @@ export const deleteTutorConversation = (id) => api.delete(`/tutor/conversations/
 // RESUME
 // ============================
 // Response: { analysis: {} }
-export const analyzeResume = (formData) =>
-  api.post("/resume/analyze", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+export const analyzeResume = (data) =>
+  api.post("/resume/analyze", data);
 // Response: { history: [] }
 export const getResumeHistory    = ()     => api.get("/resume/history");
 // Response: { analysis: {} }

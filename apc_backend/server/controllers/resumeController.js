@@ -4,54 +4,35 @@ import PDFParser from "pdf2json";
 // ── POST /api/resume/analyze ──────────────────────────────────
 export const analyzeResume = async (req, res, next) => {
   try {
-    if (!req.file) {
-    return res.status(400).json({
-      error: "Please upload a PDF resume.",
-    });
-  }
+    const { resume_text } = req.body;
 
-  const pdfParser = new PDFParser();
-
-const resume_text = await new Promise((resolve, reject) => {
-  pdfParser.on("pdfParser_dataError", (errData) => {
-    reject(errData.parserError);
-  });
-
-  pdfParser.on("pdfParser_dataReady", () => {
-    const text = pdfParser.getRawTextContent();
-
-    if (!text.trim()) {
-      reject(new Error("Unable to extract text from PDF."));
+    if (!resume_text?.trim()) {
+      return res.status(400).json({
+        error: "resume_text is required",
+      });
     }
 
-    resolve(text.trim());
-  });
+    const result = await analyzeResumeAI(resume_text.trim());
 
-  pdfParser.parseBuffer(req.file.buffer);
-});
-
-const result = await analyzeResumeAI(resume_text);
-
-    // Persist to DB
     const analysis = await ResumeAnalysis.create({
-    user_id: req.user.id,
-    resume_text: resume_text,
-    overall_score: result.score,
-    ats_score: result.ats_score,
-    verdict: result.verdict,
-    strengths: result.strengths,
-    gaps: result.gaps,
-    missing_skills: result.missing_skills,
-    recommendations: result.recommendations,
-  });
+      user_id: req.user.id,
+      resume_text: resume_text.trim(),
+      overall_score: result.score,
+      ats_score: result.ats_score,
+      verdict: result.verdict,
+      strengths: result.strengths,
+      gaps: result.gaps,
+      missing_skills: result.missing_skills,
+      recommendations: result.recommendations,
+    });
 
-  res.status(201).json({
-    analysis,
-  });
-    } catch (err) {
-      next(err);
-    }
-  };
+    res.status(201).json({
+      analysis,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 // ── GET /api/resume/history ───────────────────────────────────
 export const getResumeHistory = async (req, res, next) => {

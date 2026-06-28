@@ -1,5 +1,4 @@
 import express from "express";
-import upload from "../middleware/upload.js";
 import {
   analyzeResume,
   getResumeHistory,
@@ -15,7 +14,6 @@ router.use(authenticate);
 
 router.post(
   "/analyze",
-  upload.single("resume"),
   analyzeResume
 );
 

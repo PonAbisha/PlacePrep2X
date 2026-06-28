@@ -13,6 +13,7 @@
     "chart.js": "^4.4.2",
     "framer-motion": "^12.40.0",
     "lucide-react": "^0.368.0",
+    "pdfjs-dist": "^6.1.200",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-circular-progressbar": "^2.2.0",

@@ -10,7 +10,10 @@ import {
   HelpCircle,
   BookOpen,
 } from "lucide-react";
+import * as pdfjsLib from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 export default function ResumeAnalyzer() {
   const [resumeFile, setResumeFile] = useState(null);
@@ -31,14 +34,38 @@ export default function ResumeAnalyzer() {
     loadHistory();
   }, []);
 
+  const extractTextFromPDF = async (file) => {
+  const arrayBuffer = await file.arrayBuffer();
+
+  const pdf = await pdfjsLib.getDocument({
+    data: arrayBuffer,
+  }).promise;
+
+  let text = "";
+
+  for (let page = 1; page <= pdf.numPages; page++) {
+    const pdfPage = await pdf.getPage(page);
+
+    const content = await pdfPage.getTextContent();
+
+    text +=
+      content.items
+        .map((item) => item.str)
+        .join(" ") + "\n";
+  }
+
+  return text;
+  };
+
   const handleAnalyze = async (e) => {
     e.preventDefault();
     if (!resumeFile || loading) return;
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append("resume", resumeFile);
-      const res = await analyzeResume(formData);
+      const resumeText = await extractTextFromPDF(resumeFile);
+      const res = await analyzeResume({
+        resume_text: resumeText,
+      });
       setActiveAnalysis(res.data.analysis);
       await loadHistory(); // refresh sidebar
     } catch (err) {
