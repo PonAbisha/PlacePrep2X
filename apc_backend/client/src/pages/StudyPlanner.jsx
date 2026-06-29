@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import ConfirmModal from "../components/ConfirmModal";
 import { getPlanner, generatePlanner, toggleTask } from "../api";
 import {
   Calendar,
@@ -14,6 +15,7 @@ export default function StudyPlanner() {
   const [weekStart, setWeekStart] = useState("");
   const [loading, setLoading] = useState(true);
   const [regenerating, setRegenerating] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   async function loadPlanner() {
     try {
@@ -39,7 +41,7 @@ export default function StudyPlanner() {
         prevPlan.map((day) => ({
           ...day,
           tasks: day.tasks.map((task) =>
-            task.id === taskId ? { ...task, done: !task.done } : task
+            task._id === taskId ? { ...task, done: !task.done } : task
           ),
         }))
       );
@@ -48,22 +50,25 @@ export default function StudyPlanner() {
     }
   };
 
-  const handleRegenerate = async () => {
-    if (!window.confirm("Are you sure you want to regenerate this week's study schedule? Your current tasks will be reset.")) return;
-    setRegenerating(true);
-    try {
-      const res = await generatePlanner();
-      setPlanner(res.data.plan || []);
-      setWeekStart(res.data.week_start || "");
-      alert("Study plan regenerated successfully based on your current performance!");
-    } catch (err) {
-      alert("Regeneration failed");
-    } finally {
-      setRegenerating(false);
-    }
-  };
+  const handleRegenerate = () => {
+  setShowConfirm(true);
+};
 
-  if (loading) {
+const confirmRegenerate = async () => {
+      setShowConfirm(false);
+      setRegenerating(true);
+
+      try {
+        const res = await generatePlanner();
+        setPlanner(res.data.plan || []);
+        setWeekStart(res.data.week_start || "");
+      } catch (err) {
+        alert("Regeneration failed");
+      } finally {
+        setRegenerating(false);
+      }
+    };
+    if (loading) {
     return (
       <div className="flex justify-center items-center h-96">
         <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
@@ -155,7 +160,7 @@ export default function StudyPlanner() {
             <div className="space-y-2.5 flex-1">
               {dayPlan.tasks?.map((task) => (
                 <div
-                  key={task.id}
+                  key={task._id}
                   onClick={() => handleToggleTask(task.id)}
                   className={`flex items-start space-x-3 p-3 rounded-xl border cursor-pointer transition-all ${
                     task.done
@@ -171,7 +176,7 @@ export default function StudyPlanner() {
                   />
                   <div className="space-y-1">
                     <p className={`text-xs leading-relaxed ${task.done ? "line-through" : ""}`}>
-                      {task.task_label}
+                      {task.label}
                     </p>
                     <span className={`inline-block text-[9px] px-1.5 py-0.5 rounded font-semibold border ${
                       task.tag === "DSA"
@@ -196,6 +201,15 @@ export default function StudyPlanner() {
           </div>
         ))}
       </div>
+      <ConfirmModal
+      open={showConfirm}
+      title="Regenerate Study Plan"
+      message="Your current study plan will be replaced with a newly AI-generated schedule. Do you want to continue?"
+      confirmText="Regenerate"
+      cancelText="Cancel"
+      onConfirm={confirmRegenerate}
+      onCancel={() => setShowConfirm(false)}
+    />
     </div>
   );
 }
